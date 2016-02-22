@@ -1,0 +1,43 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:security="http://www.springframework.org/schema/security"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+          http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+          http://www.springframework.org/schema/security
+          http://www.springframework.org/schema/security/spring-security-3.2.xsd">
+
+    <security:http security="none" pattern="/mylogin.do" />
+    <security:http auto-config="true">
+        <security:form-login login-page="/mylogin.do"
+                             username-parameter="username" password-parameter="password"
+                             default-target-url="/welcome.do"/>
+        <security:intercept-url pattern="/mylogin.do" access="IS_AUTHENTICATED_ANONYMOUSLY"/>
+        <!--<security:intercept-url pattern="/**" access="ROLE_USER"/>-->
+        <security:session-management>
+            <security:concurrency-control error-if-maximum-exceeded="false" max-sessions="1"/>
+        </security:session-management>
+
+        <security:custom-filter ref="myFilter" before="FILTER_SECURITY_INTERCEPTOR" />
+
+    </security:http>
+
+    <bean id="myFilter" class="com.demo.filter.MyFilterSecurityInterceptor">
+        <property name="authenticationManager" ref="authenticationManager" />
+        <property name="accessDecisionManager" ref="myAccessDecisionManagerBean"/>
+        <property name="securityMetadataSource" ref="securityMetadataSource"/>
+    </bean>
+
+    <!--<security:http auto-config="true">
+        <security:http-basic/>
+        <security:intercept-url pattern="/**" access="ROLE_USER" />
+    </security:http>-->
+
+    <security:authentication-manager alias="authenticationManager">
+        <security:authentication-provider user-service-ref="myUserDetailService">
+        </security:authentication-provider>
+    </security:authentication-manager>
+
+    <bean class="com.demo.MyUserDetailService" id="myUserDetailService"/>
+    <bean class="com.demo.MyAccessDecisionManager" id="myAccessDecisionManagerBean"/>
+    <bean class="com.demo.MyInvocationSecurityMetadataSource" id="securityMetadataSource"/>
+</beans>

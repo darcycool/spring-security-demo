@@ -1,0 +1,43 @@
+package com.demo;
+
+import org.springframework.security.access.AccessDecisionManager;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.ConfigAttribute;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+
+import java.util.Collection;
+import java.util.Iterator;
+
+/**
+ * Created by Darcy on 2016/2/22.
+ */
+public class MyAccessDecisionManager implements AccessDecisionManager {
+    public void decide(Authentication authentication, Object o, Collection<ConfigAttribute> configAttributes) throws
+            AccessDeniedException, InsufficientAuthenticationException {
+        if (configAttributes == null) {
+            return;
+        }
+        Iterator<ConfigAttribute> ite = configAttributes.iterator();
+        while (ite.hasNext()) {
+            ConfigAttribute ca = ite.next();
+            String needRole = ca.getAttribute();
+            for (GrantedAuthority ga : authentication.getAuthorities()) {
+                if (needRole.equals(ga.getAuthority())) {
+
+                    return;
+                }
+            }
+        }
+        throw new AccessDeniedException("no right");
+    }
+
+    public boolean supports(ConfigAttribute configAttribute) {
+        return true;
+    }
+
+    public boolean supports(Class<?> aClass) {
+        return true;
+    }
+}
